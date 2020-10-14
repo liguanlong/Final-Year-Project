@@ -15,12 +15,12 @@ def loadDic():
 def actualPop(ratings, top_n, date):
     user_activities = {}
     for movie in ratings[date]:
-        for user in movie:
-            u = user_activities.get(user, -1)
-            if u == -1:
-                user_activities[u] = [movie]
+        for user in ratings[date][movie]:
+            exist = user_activities.get(user, -1)
+            if exist == -1:
+                user_activities[user] = [movie]
             else:
-                user_activities[u].append(movie)
+                user_activities[user].append(movie)
     return user_activities
 
 # prediction 
@@ -68,19 +68,23 @@ def precisionAtK(recommended, actual, k): # how many recommended items are rated
     count = 0
     total = 0
     for user in actual:
+        total += k
+        movies = actual[user]
+        for movie in movies:
+            if movie in recommended:
+                count += 1
+    return count / total
+
+def recallAtK(recommended, actual, k): # how many items rated by user are recommended
+    count = 0
+    total = 0
+    for user in actual:
         movies = actual[user]
         for movie in movies:
             total += 1
             if movie in recommended:
                 count += 1
-    return count / k
-
-def recallAtK(recommended, actual, k): # how many items rated by user are recommended
-    count = 0
-    for item in actual:
-        if item in recommended:
-            count += 1
-    return count / k
+    return count / total
 
 def getMovieTitleById(ids):
     movieNames = []
