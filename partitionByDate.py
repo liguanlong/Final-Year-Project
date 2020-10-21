@@ -33,23 +33,21 @@ print(earliest, latest)
 num_of_days = (latest - earliest) // (60 * 60 * 24) #rounded down
 print(num_of_days)
 
-rounding = 60 * 60 #round the timestamp
+rounding = 60 * 60 * 24 #round the timestamp
 timeranges = {}
 timerange_exist = {}
 for i in range (0, num_of_days):
-    low = earliest + i * 60 * 60 * 24
-    high = earliest + (i + 1) * 60 * 60 * 24
-    for t in range (low, high):
-        t = ((t - earliest) // rounding * rounding) + earliest
-        timeranges[t] = i
+    timeranges[earliest + i * 60 * 60 * 24] = i
     timerange_exist[i] = False
 print(len(timeranges))
 
 daily_ratings = {}
+time_lookup = {}
 rating_count = 0
 item_count = 0
 for ratings in pd.read_csv(ratings_path, iterator=True, chunksize=1000):
     for item in ratings[["userId", "movieId", "timestamp"]].values:
+        time_lookup[(item[0], item[1])] = item[2]
         t = ((item[2] - earliest) // rounding * rounding) + earliest
         rating_count += 1
         if t >= 1574250409:
@@ -66,9 +64,10 @@ for ratings in pd.read_csv(ratings_path, iterator=True, chunksize=1000):
         item_count += 1
 
 print(rating_count)
+print(len(time_lookup))
 print(len(timerange_exist))
 day_count = len(daily_ratings)
 print(day_count) 
 
-with open (os.path.join('data', 'daily_ratings.pickle'), 'wb') as f:
-    pickle.dump(daily_ratings, f, protocol=pickle.HIGHEST_PROTOCOL)
+np.save(os.path.join('data', 'daily_ratings.npy'), daily_ratings)
+np.save(os.path.join('data', 'time_lookup.npy'), time_lookup)
