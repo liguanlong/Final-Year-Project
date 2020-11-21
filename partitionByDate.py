@@ -47,7 +47,7 @@ rating_count = 0
 item_count = 0
 for ratings in pd.read_csv(ratings_path, iterator=True, chunksize=1000):
     for item in ratings[["userId", "movieId", "timestamp"]].values:
-        time_lookup[(item[0], item[1])] = item[2]
+        # time_lookup[(item[0], item[1])] = item[2]
         t = ((item[2] - earliest) // rounding * rounding) + earliest
         rating_count += 1
         if t >= 1574250409:
@@ -70,4 +70,4 @@ day_count = len(daily_ratings)
 print(day_count) 
 
 np.save(os.path.join('data', 'daily_ratings.npy'), daily_ratings)
-np.save(os.path.join('data', 'time_lookup.npy'), time_lookup)
+# np.save(os.path.join('data', 'time_lookup.npy'), time_lookup)

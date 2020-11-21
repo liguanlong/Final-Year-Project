@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sb
 import pickle
 import os
 import sys
@@ -89,20 +88,20 @@ def getTopN(interactions, top_n):
     return top_n_keys
 
 # get the first interactions of the day, not used
-def actualPop(ratings, time_lookup, top_n, date):
-    user_activities = {}
-    for movie in ratings[date]:
-        for user in ratings[date][movie]:
-            timestamp = time_lookup[(user,movie)]
-            exist = user_activities.get(user, -1)
-            if exist == -1:
-                user_activities[user] = (movie, timestamp)
-            elif timestamp < user_activities[user][1]:
-                user_activities[user] = (movie, timestamp)
-    for user in user_activities:
-        if user_activities[user][1] < 789652009 + 60 * 60 * 24 * date or user_activities[user][1] >= 789652009 + 60 * 60 * 24 * (date + 1):
-            print("timestamp out of range for actualPop")
-    return [user_activities[user][0] for user in user_activities]
+# def actualPop(ratings, time_lookup, top_n, date):
+#     user_activities = {}
+#     for movie in ratings[date]:
+#         for user in ratings[date][movie]:
+#             timestamp = time_lookup[(user,movie)]
+#             exist = user_activities.get(user, -1)
+#             if exist == -1:
+#                 user_activities[user] = (movie, timestamp)
+#             elif timestamp < user_activities[user][1]:
+#                 user_activities[user] = (movie, timestamp)
+#     for user in user_activities:
+#         if user_activities[user][1] < 789652009 + 60 * 60 * 24 * date or user_activities[user][1] >= 789652009 + 60 * 60 * 24 * (date + 1):
+#             print("timestamp out of range for actualPop")
+#     return [user_activities[user][0] for user in user_activities]
 
 def getNextValidDay(ratings, until):
     i = 1
