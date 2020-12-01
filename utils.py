@@ -33,7 +33,7 @@ def mostPop(ratings, top_n, until):
 def recentPop(ratings, top_n, until, recent):
     movies = {}
     for k in ratings:
-        if k >= until or k < until - recent * 30:
+        if k >= until or k < until - recent:
             continue
         for m in ratings[k]:
             users = list(ratings[k][m])
@@ -48,9 +48,10 @@ def recentPop(ratings, top_n, until, recent):
 def decayPop(ratings, top_n, until, recent):
     movies = {}
     for k in ratings:
-        if k >= until or k < until - recent * 30:
+        if k >= until or k < until - recent:
             continue
-        how_recent = (until - k - 1) // 30 + 1
+        # how_recent = (until - k - 1) // 7 + 1
+        how_recent = (until - k - 1) // 1 + 1
         weight = math.e ** how_recent
         for m in ratings[k]:
             users = list(ratings[k][m])
@@ -131,8 +132,8 @@ def getMaxR(user_activities):
         max_R = max(R, max_R)
 
     # print(user_activities)
-    print(count)
-    print(max_R)
+    # print(count)
+    # print(max_R)
     return max_R
 
 # evaluations
