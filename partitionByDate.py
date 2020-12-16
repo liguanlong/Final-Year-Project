@@ -3,6 +3,11 @@ import pandas as pd
 import os
 import sys
 import pickle
+import datetime
+def convert_time(timestamp):
+    date=datetime.datetime.fromtimestamp(
+    int(timestamp)).strftime('%Y-%m-%d %H:%M:%S')
+    return int(date[0:4]), int(date[5:7]), int(date[8:10])
 
 full_data_path = os.path.join(sys.path[0], 'data', 'ml-25m')
 small_data_path = os.path.join(sys.path[0], 'data', 'ml-latest-small')
@@ -28,18 +33,7 @@ for ratings in pd.read_csv(ratings_path, iterator=True, chunksize=1000):
                 latest = item[2]
             if item[2] < earliest:
                 earliest = item[2]       
-print(earliest, latest)
-
-num_of_days = (latest - earliest) // (60 * 60 * 24) #rounded down
-print(num_of_days)
-
-rounding = 60 * 60 * 24 #round the timestamp
-timeranges = {}
-timerange_exist = {}
-for i in range (0, num_of_days):
-    timeranges[earliest + i * 60 * 60 * 24] = i
-    timerange_exist[i] = False
-print(len(timeranges))
+print(convert_time(earliest), convert_time(latest))
 
 daily_ratings = {}
 time_lookup = {}
@@ -48,24 +42,22 @@ item_count = 0
 for ratings in pd.read_csv(ratings_path, iterator=True, chunksize=1000):
     for item in ratings[["userId", "movieId", "timestamp"]].values:
         # time_lookup[(item[0], item[1])] = item[2]
-        t = ((item[2] - earliest) // rounding * rounding) + earliest
+        year, month, day = convert_time(item[2])
         rating_count += 1
-        if t >= 1574250409:
-            continue #ignore the last incomplete 24 hours
-        i = timeranges[t]
-        if not timerange_exist[i]:
+        if year >= 2019 or year <= 2008:
+            continue #ignore the last incomplete year, and only keep latest 10 years of data
+        i = (year, month, day)
+        if daily_ratings.get(i, -1) == -1:
             daily_ratings[i] = {item[1] : [item[0]]}
-            timerange_exist[i] = True
         else:
             try:
                 daily_ratings[i][item[1]].append(item[0])
             except KeyError:
                 daily_ratings[i][item[1]] = [item[0]]
-        item_count += 1
 
+print(daily_ratings[(2018, 12, 31)])
 print(rating_count)
 print(len(time_lookup))
-print(len(timerange_exist))
 day_count = len(daily_ratings)
 print(day_count) 
 

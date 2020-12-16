@@ -5,6 +5,7 @@ import pickle
 import os
 import sys
 import math
+from datetime import date
 
 def loadDic():
     daily_ratings_path = os.path.join('data', 'daily_ratings.npy')
@@ -18,7 +19,9 @@ def loadDic():
 def mostPop(ratings, top_n, until):
     movies = {}
     for k in ratings:
-        if k >= until:
+        k_date = date(k[0], k[1], k[2])
+        until_date = date(until[0], until[1], until[2])
+        if k_date >= until_date:
             continue
         for m in ratings[k]:
             users = list(ratings[k][m])
@@ -33,7 +36,9 @@ def mostPop(ratings, top_n, until):
 def recentPop(ratings, top_n, until, recent):
     movies = {}
     for k in ratings:
-        if k >= until or k < until - recent:
+        k_date = date(k[0], k[1], k[2])
+        until_date = date(until[0], until[1], until[2])
+        if k_date >= until_date or (until_date - k_date).days > recent:
             continue
         for m in ratings[k]:
             users = list(ratings[k][m])
@@ -48,10 +53,11 @@ def recentPop(ratings, top_n, until, recent):
 def decayPop(ratings, top_n, until, recent):
     movies = {}
     for k in ratings:
-        if k >= until or k < until - recent:
+        k_date = date(k[0], k[1], k[2])
+        until_date = date(until[0], until[1], until[2])
+        if k_date >= until_date or (until_date - k_date).days > recent:
             continue
-        # how_recent = (until - k - 1) // 7 + 1
-        how_recent = (until - k - 1) // 1 + 1
+        how_recent = (until_date - k_date).days 
         weight = math.e ** how_recent
         for m in ratings[k]:
             users = list(ratings[k][m])
@@ -87,29 +93,6 @@ def getTopN(interactions, top_n):
     # print(top_n_keys)
     # print(top_n_values)
     return top_n_keys
-
-# get the first interactions of the day, not used
-# def actualPop(ratings, time_lookup, top_n, date):
-#     user_activities = {}
-#     for movie in ratings[date]:
-#         for user in ratings[date][movie]:
-#             timestamp = time_lookup[(user,movie)]
-#             exist = user_activities.get(user, -1)
-#             if exist == -1:
-#                 user_activities[user] = (movie, timestamp)
-#             elif timestamp < user_activities[user][1]:
-#                 user_activities[user] = (movie, timestamp)
-#     for user in user_activities:
-#         if user_activities[user][1] < 789652009 + 60 * 60 * 24 * date or user_activities[user][1] >= 789652009 + 60 * 60 * 24 * (date + 1):
-#             print("timestamp out of range for actualPop")
-#     return [user_activities[user][0] for user in user_activities]
-
-def getNextValidDay(ratings, until):
-    i = 1
-    while (ratings.get(until + i, -1) == -1):
-        i += 1
-    date = until + i
-    return date
 
 def getUserActivities(rating):
     user_activities = {}
@@ -152,52 +135,6 @@ def RPrecision(user_activities, max_R_predicted):
     R_precision /= len(user_activities)
     return R_precision
 
-# not used in the evaluation
-def precisionAtK(recommended, actual, k): # how many recommended items are rated by user
-    count = 0
-    total = 0
-    for movie in recommended:
-        total += 1
-        for watched in actual:
-            if movie == watched:
-                count += 1
-                break
-    return count / total
-
-def recallAtK(recommended, actual, k): # how many items rated by user are recommended
-    count = 0
-    total = 0
-    watched_set = set(actual)
-    for watched in watched_set:
-        total += 1
-        if watched in recommended:
-            count += 1
-    return count / total
-
-def ndcgAtK(recommended, actual, k):
-    watched_dict = {}
-    for watched in actual:
-        if watched not in watched_dict:
-            watched_dict[watched] = 1
-        else:
-            watched_dict[watched] += 1
-    dcg = 0
-    rel_list = []
-    for movie in recommended:
-        pos = recommended.index(movie) + 1
-        rel = watched_dict.get(movie, 0)
-        rel_list.append(rel)
-        dcg += rel / math.log2(pos + 1)
-    if dcg == 0:
-        return dcg
-    idcg = 0
-    ipos = 1
-    rel_list.sort(reverse=True)
-    for rel in rel_list:
-        idcg += rel / math.log2(ipos + 1) 
-        ipos += 1
-    return dcg / idcg
-
 def getMovieTitleById(ids):
     movieNames = []
     for movies in pd.read_csv(os.path.join(sys.path[0], 'data', 'ml-25m', 'movies.csv'), iterator=True, chunksize=1000):
@@ -206,3 +143,49 @@ def getMovieTitleById(ids):
                 movieNames.append(item[1])
     print(movieNames)
     return movieNames
+
+# not used in the evaluation
+# def precisionAtK(recommended, actual, k): # how many recommended items are rated by user
+#     count = 0
+#     total = 0
+#     for movie in recommended:
+#         total += 1
+#         for watched in actual:
+#             if movie == watched:
+#                 count += 1
+#                 break
+#     return count / total
+
+# def recallAtK(recommended, actual, k): # how many items rated by user are recommended
+#     count = 0
+#     total = 0
+#     watched_set = set(actual)
+#     for watched in watched_set:
+#         total += 1
+#         if watched in recommended:
+#             count += 1
+#     return count / total
+
+# def ndcgAtK(recommended, actual, k):
+#     watched_dict = {}
+#     for watched in actual:
+#         if watched not in watched_dict:
+#             watched_dict[watched] = 1
+#         else:
+#             watched_dict[watched] += 1
+#     dcg = 0
+#     rel_list = []
+#     for movie in recommended:
+#         pos = recommended.index(movie) + 1
+#         rel = watched_dict.get(movie, 0)
+#         rel_list.append(rel)
+#         dcg += rel / math.log2(pos + 1)
+#     if dcg == 0:
+#         return dcg
+#     idcg = 0
+#     ipos = 1
+#     rel_list.sort(reverse=True)
+#     for rel in rel_list:
+#         idcg += rel / math.log2(ipos + 1) 
+#         ipos += 1
+#     return dcg / idcg
