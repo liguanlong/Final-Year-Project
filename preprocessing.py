@@ -4,6 +4,8 @@ import os
 import sys
 import pickle
 import datetime
+from utils import getUserActivities, getMaxR
+
 def convert_time(timestamp):
     date=datetime.datetime.fromtimestamp(
     int(timestamp)).strftime('%Y-%m-%d %H:%M:%S')
@@ -36,16 +38,18 @@ for ratings in pd.read_csv(ratings_path, iterator=True, chunksize=1000):
 print(convert_time(earliest), convert_time(latest))
 
 daily_ratings = {}
-time_lookup = {}
 rating_count = 0
-item_count = 0
+movie_ratings = {}
+movie_count = 0
+
 for ratings in pd.read_csv(ratings_path, iterator=True, chunksize=1000):
     for item in ratings[["userId", "movieId", "timestamp"]].values:
-        # time_lookup[(item[0], item[1])] = item[2]
         year, month, day = convert_time(item[2])
         rating_count += 1
-        if year >= 2019 or year <= 2008:
-            continue #ignore the last incomplete year, and only keep latest 10 years of data
+        # if year >= 2019 or year <= 2008:
+        #     continue #ignore the last incomplete year, and only keep latest 10 years of data
+        if datetime.date(year, month, day) > datetime.date(2019, 10, 31) or datetime.date(year, month, day) <= datetime.date(2009, 10, 31):
+            continue
         i = (year, month, day)
         if daily_ratings.get(i, -1) == -1:
             daily_ratings[i] = {item[1] : [item[0]]}
@@ -55,11 +59,28 @@ for ratings in pd.read_csv(ratings_path, iterator=True, chunksize=1000):
             except KeyError:
                 daily_ratings[i][item[1]] = [item[0]]
 
-print(daily_ratings[(2018, 12, 31)])
+        if movie_ratings.get(item[1], -1) == -1:
+            movie_count += 1
+            movie_ratings[item[1]] = {i : 1}
+        else:
+            try:
+                movie_ratings[item[1]][i] += 1
+            except KeyError:
+                movie_ratings[item[1]][i] = 1
+# print(daily_ratings[(2018, 12, 31)])
+# print(movie_ratings[72998])
 print(rating_count)
-print(len(time_lookup))
+print(movie_count)
 day_count = len(daily_ratings)
 print(day_count) 
 
+max_R_dic = {}
+for date in daily_ratings:
+    max_R = getMaxR(getUserActivities(daily_ratings[date]))
+    max_R_dic[date] = max_R
+print(len(max_R_dic))
+
+np.save(os.path.join('data', 'max_R_dic.npy'), max_R_dic)
 np.save(os.path.join('data', 'daily_ratings.npy'), daily_ratings)
+np.save(os.path.join('data', 'movie_ratings.npy'), movie_ratings)
 # np.save(os.path.join('data', 'time_lookup.npy'), time_lookup)
