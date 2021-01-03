@@ -74,13 +74,6 @@ print(movie_count)
 day_count = len(daily_ratings)
 print(day_count) 
 
-max_R_dic = {}
-for date in daily_ratings:
-    max_R = getMaxR(getUserActivities(daily_ratings[date]))
-    max_R_dic[date] = max_R
-print(len(max_R_dic))
-
-np.save(os.path.join('data', 'max_R_dic.npy'), max_R_dic)
 np.save(os.path.join('data', 'daily_ratings.npy'), daily_ratings)
 np.save(os.path.join('data', 'movie_ratings.npy'), movie_ratings)
 # np.save(os.path.join('data', 'time_lookup.npy'), time_lookup)
