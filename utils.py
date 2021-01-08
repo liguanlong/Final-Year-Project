@@ -5,7 +5,7 @@ import pickle
 import os
 import sys
 import math
-from datetime import date
+from datetime import *
 
 def loadDic():
     daily_ratings_path = os.path.join('data', 'daily_ratings.npy')
