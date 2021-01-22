@@ -5,7 +5,7 @@ import pickle
 import os
 import sys
 import math
-from datetime import *
+import datetime
 
 def loadDic():
     daily_ratings_path = os.path.join('data', 'daily_ratings.npy')
@@ -21,8 +21,8 @@ def loadDic():
 def mostPop(ratings, top_n, until):
     movies = {}
     for k in ratings:
-        k_date = date(k[0], k[1], k[2])
-        until_date = date(until[0], until[1], until[2])
+        k_date = datetime.date(k[0], k[1], k[2])
+        until_date = datetime.date(until[0], until[1], until[2])
         if k_date >= until_date:
             continue
         for m in ratings[k]:
@@ -38,8 +38,8 @@ def mostPop(ratings, top_n, until):
 def recentPop(ratings, top_n, until, recent):
     movies = {}
     for k in ratings:
-        k_date = date(k[0], k[1], k[2])
-        until_date = date(until[0], until[1], until[2])
+        k_date = datetime.date(k[0], k[1], k[2])
+        until_date = datetime.date(until[0], until[1], until[2])
         if k_date >= until_date or (until_date - k_date).days > recent:
             continue
         for m in ratings[k]:
@@ -55,11 +55,11 @@ def recentPop(ratings, top_n, until, recent):
 def decayPop(ratings, top_n, until, recent):
     movies = {}
     for k in ratings:
-        k_date = date(k[0], k[1], k[2])
-        until_date = date(until[0], until[1], until[2])
+        k_date = datetime.date(k[0], k[1], k[2])
+        until_date = datetime.date(until[0], until[1], until[2])
         if k_date >= until_date or (until_date - k_date).days > recent:
             continue
-        how_recent = (until_date - k_date).days 
+        how_recent = -(until_date - k_date).days
         weight = math.e ** how_recent
         for m in ratings[k]:
             users = list(ratings[k][m])
