@@ -9,13 +9,13 @@ import datetime
 
 def loadDic():
     daily_ratings_path = os.path.join('data', 'daily_ratings.npy')
-    movie_ratings_path = os.path.join('data', 'movie_ratings.npy')
     daily_ratings = np.load(daily_ratings_path, allow_pickle=True).item()
-    movie_ratings = np.load(movie_ratings_path, allow_pickle=True).item()
+    # movie_ratings_path = os.path.join('data', 'movie_ratings.npy')
+    # movie_ratings = np.load(movie_ratings_path, allow_pickle=True).item()
     # time_lookup_path = os.path.join('data', 'time_lookup.npy')
     # time_lookup = np.load(time_lookup_path, allow_pickle=True).item()
     # return ratings, time_lookup
-    return daily_ratings, movie_ratings
+    return daily_ratings
 
 # prediction 
 def mostPop(ratings, top_n, until):
